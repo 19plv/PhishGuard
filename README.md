@@ -47,10 +47,11 @@ The current model achieved approximately 97.78% accuracy on its held-out test sp
 1. Install Python and the project's required dependencies.
 2. Activate the project's virtual environment. -> .\.venv\Scripts\Activate.ps1
 You should see (.venv) at the beginning of your terminal line.
-## venu, python, live server
 3. Ensure the trained model exists at `model/phishing_model.joblib`.
 4. Run `python app.py` from the project directory.
 5. Open the local web address printed by Flask in your browser.
+( venu, python, live server)
+
 
 ## 8. Future Enhancements
 

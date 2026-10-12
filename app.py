@@ -3,22 +3,79 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from urllib.parse import urlparse
 from pathlib import Path
+import hashlib
+import hmac
 import ipaddress
 import joblib
 
 app = Flask(__name__)
 CORS(app)
 
-# Load the trained model once when Flask starts
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "model" / "phishing_model.joblib"
+HASH_PATH = BASE_DIR / "model" / "trusted_model_hash.txt"
 
-if not MODEL_PATH.exists():
+
+def calculate_sha256(file_path):
+    """Calculate a file's SHA-256 hash."""
+    sha256 = hashlib.sha256()
+
+    with open(file_path, "rb") as file:
+        for chunk in iter(lambda: file.read(4096), b""):
+            sha256.update(chunk)
+
+    return sha256.hexdigest()
+
+
+def verify_model_integrity():
+    """Compare the model hash with the saved reference."""
+    if not MODEL_PATH.is_file():
+        return False, "Model file not found."
+
+    if not HASH_PATH.is_file():
+        return False, "Trusted hash reference not found."
+
+    try:
+        trusted_hash = HASH_PATH.read_text(
+            encoding="utf-8"
+        ).strip()
+
+        if len(trusted_hash) != 64:
+            return False, "Trusted hash reference is invalid."
+
+        # Ensure the reference contains hexadecimal characters.
+        try:
+            int(trusted_hash, 16)
+        except ValueError:
+            return False, "Trusted hash reference is invalid."
+
+        current_hash = calculate_sha256(MODEL_PATH)
+
+        if hmac.compare_digest(current_hash, trusted_hash.lower()):
+            return True, "Model integrity verified."
+
+        return False, "Model hash differs from the trusted reference."
+
+    except OSError:
+        return False, "Unable to read the model or hash reference."
+
+
+# Refuse to load the model if integrity verification fails.
+if not MODEL_PATH.is_file():
     raise FileNotFoundError(
         f"Trained model not found: {MODEL_PATH}. "
         "Run train_model.py first."
     )
 
+integrity_ok, integrity_message = verify_model_integrity()
+
+if not integrity_ok:
+    raise RuntimeError(
+        f"Model integrity verification failed: {integrity_message} "
+        "Check the model and restore a trusted reference before starting."
+    )
+
+# Load the model only after its integrity check succeeds.
 model = joblib.load(MODEL_PATH)
 
 
@@ -27,7 +84,6 @@ def analyse_url(url):
     hostname = (parsed.hostname or "").lower()
     indicators = []
 
-    # Check whether the hostname is an IP address
     try:
         ipaddress.ip_address(hostname)
         indicators.append(
@@ -36,29 +92,24 @@ def analyse_url(url):
     except ValueError:
         pass
 
-    # Check for a potentially misleading @ symbol
     if "@" in url:
         indicators.append(
             "The URL contains an @ symbol that may be misleading."
         )
 
-    # Check URL length
     if len(url) > 100:
         indicators.append("The URL is unusually long.")
 
-    # Check number of domain components
     if len(hostname.split(".")) > 4:
         indicators.append(
             "The hostname contains many domain components."
         )
 
-    # Check for punycode
     if "xn--" in hostname:
         indicators.append(
             "The hostname contains an internationalized domain encoding."
         )
 
-    # Check whether HTTPS is used
     if parsed.scheme == "http":
         indicators.append(
             "The URL uses HTTP rather than encrypted HTTPS."
@@ -73,6 +124,24 @@ def home():
         "message": "Welcome to PhishGuard API",
         "status": "Backend is running",
         "model_loaded": True
+    })
+
+
+@app.route("/api/integrity", methods=["GET"])
+def model_integrity():
+    # Recheck the file against the saved reference.
+    verified, message = verify_model_integrity()
+
+    if not verified:
+        return jsonify({
+            "integrity": "failed",
+            "message": message
+        }), 503
+
+    return jsonify({
+        "integrity": "verified",
+        "message": message,
+        "algorithm": "SHA-256"
     })
 
 
@@ -92,7 +161,6 @@ def scan_url():
     if any(char.isspace() for char in url):
         return jsonify({"error": "Please enter a valid URL."}), 400
 
-    # Add a scheme if the user omitted it
     if "://" not in url:
         url = "https://" + url
 
@@ -115,14 +183,9 @@ def scan_url():
     ):
         return jsonify({"error": "Please enter a valid website URL."}), 400
 
-    # Run the basic URL checks
     indicators = analyse_url(url)
-
-    # The model was trained on URL strings, often without a scheme.
-    # Remove only the leading scheme to better match its training format.
     model_input = url.split("://", 1)[1]
 
-    # Model labels: 0 = good (legitimate), 1 = bad (phishing)
     prediction = int(model.predict([model_input])[0])
 
     if prediction == 1:
