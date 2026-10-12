@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard - Website Safety Checker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="container">
+
+        <header class="header">
+            <svg class="shield" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/>
+                <path d="m9 12 2 2 4-4"/>
+            </svg>
+
+            <h1>PhishGuard</h1>
+            <p>Check a website before you click</p>
+        </header>
+
+        <form id="scanForm">
+            <label for="urlInput" class="visually-hidden">
+                Website URL
+            </label>
+
+            <input
+                type="text"
+                id="urlInput"
+                placeholder="https://example.com"
+                autocomplete="url"
+                spellcheck="false"
+                required
+            >
+
+            <button type="submit">Check URL</button>
+        </form>
+
+        <section class="result" aria-live="polite">
+
+            <div class="result-heading">
+                <span id="resultIcon" class="result-icon">✓</span>
+                <h2 id="resultTitle">Ready to check</h2>
+            </div>
+
+            <p id="resultDescription">
+                Enter a website URL to see a sample scan result.
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="status-row">
+                <span>Detection status</span>
+                <span id="statusBadge" class="badge">
+                    Demo mode
+                </span>
+            </div>
+
+            <p id="resultDetails">
+                This frontend demo does not verify whether a website
+                is safe. Python detection will be connected later.
+            </p>
+
+            <p class="disclaimer" id="disclaimer">
+                A website's safety cannot be guaranteed by its URL alone.
+            </p>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

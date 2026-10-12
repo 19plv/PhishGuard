@@ -1,0 +1,183 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 15px 16px;
+    background-color: #ffffff;
+    color: #111111;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 17px 26px 20px;
+    border: 1px solid #dedede;
+    border-radius: 13px;
+}
+
+.header {
+    text-align: center;
+}
+
+.shield {
+    width: 27px;
+    height: 27px;
+    color: #00a647;
+    margin-bottom: 5px;
+}
+
+.header h1 {
+    font-size: 19px;
+    margin: 0 0 8px;
+    font-weight: 600;
+}
+
+.header p {
+    color: #555555;
+    margin: 0 0 17px;
+}
+
+#scanForm {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+#urlInput {
+    width: 100%;
+    height: 38px;
+    padding: 0 16px;
+    border: 1px solid #d6d6d6;
+    border-radius: 22px;
+    font-size: 14px;
+    outline: none;
+}
+
+#urlInput:focus {
+    border-color: #00a647;
+    box-shadow: 0 0 0 2px #e4f7eb;
+}
+
+button {
+    align-self: flex-end;
+    padding: 9px 17px;
+    border: none;
+    border-radius: 20px;
+    background-color: #078c42;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #067536;
+}
+
+button:focus-visible {
+    outline: 2px solid #078c42;
+    outline-offset: 3px;
+}
+
+.result {
+    margin-top: 22px;
+}
+
+.result-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.result-icon {
+    width: 17px;
+    height: 17px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 1.5px solid #00a647;
+    border-radius: 50%;
+    color: #00a647;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.result-heading h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#resultDescription {
+    margin: 13px 0 16px;
+    color: #555555;
+    line-height: 1.5;
+}
+
+.divider {
+    height: 1px;
+    background-color: #dedede;
+    margin-bottom: 16px;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: #555555;
+    font-size: 12px;
+}
+
+.badge {
+    padding: 4px 9px;
+    border-radius: 14px;
+    background-color: #eeeeee;
+    color: #444444;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+#resultDetails {
+    margin: 9px 0 0;
+    line-height: 1.6;
+}
+
+.disclaimer {
+    margin: 25px 0 0;
+    color: #777777;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 18px 15px;
+    }
+
+    #scanForm button {
+        width: 100%;
+    }
+}
