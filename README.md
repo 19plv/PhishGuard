@@ -1,66 +1,178 @@
 # PhishGuard — Phishing Website Detection System
 
+A machine-learning-based web application that classifies website URLs as potentially phishing or legitimate, with SHA-256 file integrity verification for the trained model.
+
 ## 1. Project Overview
 
-PhishGuard is a machine-learning-based web application designed to classify URLs as potentially phishing or legitimate. It provides a simple interface where users can enter a URL and view the model's prediction.
+PhishGuard combines machine learning, web development, and a cryptographic integrity check to demonstrate two security concepts:
+
+- **Phishing URL detection:** predicts whether a submitted URL resembles phishing or legitimate examples in the training dataset.
+- **File integrity verification:** uses SHA-256 to check whether the trained model matches a previously recorded hash.
+
+PhishGuard is an educational project. Its predictions do not guarantee that a website is safe or malicious.
 
 ## 2. Objectives
 
 - Identify potentially suspicious website URLs.
 - Apply machine learning to URL classification.
 - Provide an easy-to-use web interface.
-- Display predictions through a backend API.
-- Help users understand the risks associated with suspicious links.
+- Connect the frontend to a Flask API.
+- Demonstrate SHA-256-based file integrity verification.
+- Evaluate model performance and document its limitations.
 
 ## 3. Technologies Used
 
-- **Frontend:** HTML, CSS, JavaScript
-- **Backend:** Python, Flask
-- **Machine Learning:** scikit-learn
-- **Model:** TF-IDF character n-grams with Linear Support Vector Classification (LinearSVC)
-- **Dataset:** A labelled CSV dataset containing URLs classified as good or bad.
+| Component | Technology |
+|---|---|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Python, Flask |
+| API | Flask JSON endpoints |
+| Machine learning | scikit-learn |
+| Feature extraction | TF-IDF character n-grams |
+| Classifier | Linear Support Vector Classification (LinearSVC) |
+| Cryptography | SHA-256 |
+| Model storage | Joblib |
 
 ## 4. System Workflow
 
-1. The user enters a URL in the website.
+### Phishing detection
+
+1. The user enters a URL in the web interface.
 2. JavaScript sends the URL to the Flask API.
-3. The backend validates the input and analyses URL characteristics.
-4. The trained machine learning model predicts the URL's class.
-5. The backend returns the result as JSON.
-6. The frontend displays the prediction and available indicators.
+3. The backend validates the input and analyses basic URL characteristics.
+4. The trained model predicts the URL's class.
+5. The backend returns the prediction and indicators as JSON.
+6. The frontend displays the result.
+
+### SHA-256 integrity verification
+
+1. PhishGuard calculates the SHA-256 hash of the saved model file.
+2. It compares the calculated hash with the saved reference hash.
+3. If the hashes match, the file is reported as matching the reference.
+4. If the hashes differ, the integrity check fails.
+
+**Security limitation:** The reference hash is stored alongside the model. This is suitable for demonstrating the concept, but it is not tamper-proof if an attacker can modify both files.
 
 ## 5. Dataset and Model
 
-The dataset contains approximately 507,000 URL records, labelled as good or bad. The model was trained using a stratified train-test split.
+The dataset used for training contains approximately 507,000 URL records labelled as `good` or `bad`.
 
-The current model achieved approximately 97.78% accuracy on its held-out test split. This result applies to that evaluation setup and does not guarantee equivalent accuracy on unseen websites.
+The model uses character-level TF-IDF features and a LinearSVC classifier. The trained model is saved as `model/phishing_model.joblib`.
 
-## 6. Limitations
+In the recorded held-out test evaluation, the model achieved approximately **97.78% accuracy**. This metric applies to that particular evaluation setup and does not guarantee equivalent performance on previously unseen domains.
+
+The dataset is not included in this GitHub repository. The trained model is included.
+
+## 6. Cryptographic Experiment
+
+The SHA-256 integrity checker calculates a 256-bit cryptographic hash, represented as 64 hexadecimal characters.
+
+The integrity experiment produced these results:
+
+| Test | Expected result | Observed result |
+|---|---|---|
+| Verify an unchanged test file | Hashes match | Passed |
+| Verify a modified test file against the original hash | Hashes differ | Passed |
+| Verify the saved model against its recorded hash | Integrity verified | Passed |
+
+The tamper-detection experiment used a temporary test file. The actual trained model was not modified during that experiment.
+
+A matching hash establishes consistency with the recorded reference; it does not independently establish that the file is trustworthy.
+
+## 7. Project Structure
+
+```text
+PhishGuard/
+├── app.py
+├── train_model.py
+├── check_model.py
+├── evaluate_urls.py
+├── integrity_checker.py
+├── test_integrity.py
+├── index.html
+├── style.css
+├── script.js
+├── requirements.txt
+├── README.md
+├── .gitignore
+├── data/                 # Dataset excluded from Git
+└── model/
+    ├── phishing_model.joblib
+    └── trusted_model_hash.txt
+```
+
+## 8. How to Run Locally
+
+### Prerequisites
+
+- Python installed on your computer
+- Git installed if cloning the repository
+- The trained model and its reference hash
+
+### Step 1: Clone the repository
+
+```bash
+git clone https://github.com/19plv/PhishGuard.git
+cd PhishGuard
+```
+
+### Step 2: Create a virtual environment
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### Step 3: Install dependencies
+
+```powershell
+pip install -r requirements.txt
+```
+
+### Step 4: Start the application
+
+```powershell
+python app.py
+```
+
+Open the local address printed by Flask in your browser, usually `http://127.0.0.1:5000`.
+
+### Step 5: Check model integrity
+
+With the Flask application running, open:
+
+`http://127.0.0.1:5000/api/integrity`
+
+A successful response reports `"integrity": "verified"`.
+
+**Note:** The dataset is excluded from the repository. To retrain the model, obtain the dataset from its original source, subject to its licence and availability.
+
+## 9. API Endpoints
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/` | GET | Check backend status |
+| `/api/scan` | POST | Submit a URL for classification |
+| `/api/integrity` | GET | Verify model-file integrity |
+
+## 10. Limitations
 
 - The model can incorrectly classify legitimate URLs.
 - New or previously unseen domains may be misclassified.
-- A model prediction is not a guarantee that a website is safe or malicious.
-- The system does not replace browser security warnings or other security tools.
+- Accuracy on the recorded test split may not represent real-world performance.
+- SHA-256 verification depends on the integrity of the saved reference hash.
+- A model prediction does not guarantee that a website is safe.
+- PhishGuard does not replace browser security warnings or professional security tools.
 
-## 7. How to Run
+## 11. Future Enhancements
 
-1. Install Python and the project's required dependencies.
-2. Activate the project's virtual environment. -> .\.venv\Scripts\Activate.ps1
-You should see (.venv) at the beginning of your terminal line.
-3. Ensure the trained model exists at `model/phishing_model.joblib`.
-4. Run `python app.py` from the project directory.
-5. Open the local web address printed by Flask in your browser.
-( venu, python, live server)
-
-
-## 8. Future Enhancements
-
+- Evaluate the model using previously unseen domains.
 - Improve the quality and diversity of the training dataset.
-- Evaluate the model on URLs from previously unseen domains.
-- Improve detection of deceptive and lookalike domains.
-- Add more comprehensive security tests.
+- Reduce false positives on legitimate websites.
+- Protect the trusted hash using a stronger trust mechanism.
+- Add further security tests and improve error handling.
 - Deploy the application for online access.
 
-## 9. Disclaimer
+## 12. Disclaimer
 
-PhishGuard is an educational project. Its predictions are indicative only and should not be treated as definitive security verdicts.
+PhishGuard is an educational project developed to demonstrate machine learning-based URL classification and cryptographic file integrity verification. Its outputs are indicative only and should not be treated as definitive security verdicts.
